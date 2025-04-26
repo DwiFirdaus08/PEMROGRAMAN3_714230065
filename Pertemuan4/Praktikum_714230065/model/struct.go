@@ -5,7 +5,7 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 type Mahasiswa struct {
 	ID         primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
 	Nama       string             `bson:"nama" json:"nama"`
-	NPM        string             `bson:"npm" json:"npm"`
+	NPM        int             	  `bson:"npm" json:"npm"`
 	Prodi      string             `bson:"prodi" json:"prodi"`
 	Fakultas   string             `bson:"fakultas" json:"fakultas"`
 	Alamat     Alamat             `bson:"alamat" json:"alamat"`

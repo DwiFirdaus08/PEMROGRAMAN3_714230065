@@ -7,6 +7,7 @@ import (
 	"inibackend/model"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func InsertMahasiswa(ctx context.Context, mhs model.Mahasiswa) (insertedID interface{}, err error) {
@@ -20,7 +21,7 @@ func InsertMahasiswa(ctx context.Context, mhs model.Mahasiswa) (insertedID inter
 		return nil, err
 	}
 	if count > 0 {
-		return nil, fmt.Errorf("NPM %s sudah terdaftar", mhs.NPM)
+		return nil, fmt.Errorf("NPM %v sudah terdaftar", mhs.NPM)
 	}
 
 	// Insert jika NPM belum ada
@@ -33,14 +34,18 @@ func InsertMahasiswa(ctx context.Context, mhs model.Mahasiswa) (insertedID inter
 	return insertResult.InsertedID, nil
 }
 
-func GetMahasiswaByNPM(ctx context.Context, npm string) (mhs model.Mahasiswa) {
+func GetMahasiswaByNPM(ctx context.Context, npm int) (mhs *model.Mahasiswa, err error) {
 	mahasiswa := config.MongoConnect(config.DBName).Collection(config.MahasiswaCollection)
 	filter := bson.M{"npm": npm}
-	err := mahasiswa.FindOne(ctx, filter).Decode(&mhs)
+	err = mahasiswa.FindOne(ctx, filter).Decode(&mhs)
 	if err != nil {
-		fmt.Printf("GetMahasiswaByNPM: %v\n", err)
+		//jika tidak ada data yang dutemukan akan error
+		if err == mongo.ErrNoDocuments {
+			return nil, nil // kembalikan nilai nil jika tidak ada data
+		}
+		return nil, fmt.Errorf("terjadi kesalahan dalam mengambil data: %v", err)
 	}
-	return
+	return mhs, nil
 }
 
 func GetAllMahasiswa(ctx context.Context) ([]model.Mahasiswa, error) {
@@ -62,7 +67,7 @@ func GetAllMahasiswa(ctx context.Context) ([]model.Mahasiswa, error) {
 	return data, nil
 }
 
-func UpdateMahasiswa(ctx context.Context, npm string, update model.Mahasiswa) (updatedNPM string, err error) {
+func UpdateMahasiswa(ctx context.Context, npm int, update model.Mahasiswa) (updatednpm int, err error) {
 	collection := config.MongoConnect(config.DBName).Collection(config.MahasiswaCollection)
 
 	filter := bson.M{"npm": npm}
@@ -71,25 +76,25 @@ func UpdateMahasiswa(ctx context.Context, npm string, update model.Mahasiswa) (u
 	result, err := collection.UpdateOne(ctx, filter, updateData)
 	if err != nil {
 		fmt.Printf("UpdateMahasiswa: %v\n", err)
-		return "", err
+		return 0, err
 	}
 	if result.ModifiedCount == 0 {
-		return "", fmt.Errorf("tidak ada data yang diupdate untuk NPM %s", npm)
+		return 0, fmt.Errorf("tidak ada data yang diupdate untuk NPM %v", npm)
 	}
 	return npm, nil
 }
 
-func DeleteMahasiswa(ctx context.Context, npm string) (deletedNPM string, err error) {
+func DeleteMahasiswa(ctx context.Context, npm int) (deletednpm int, err error) {
 	collection := config.MongoConnect(config.DBName).Collection(config.MahasiswaCollection)
 
 	filter := bson.M{"npm": npm}
 	result, err := collection.DeleteOne(ctx, filter)
 	if err != nil {
 		fmt.Printf("DeleteMahasiswa: %v\n", err)
-		return "", err
+		return 0, err
 	}
 	if result.DeletedCount == 0 {
-		return "", fmt.Errorf("tidak ada data yang dihapus untuk NPM %s", npm)
+		return 0, fmt.Errorf("tidak ada data yang dihapus untuk NPM %v", npm)
 	}
 	return npm, nil
 }
