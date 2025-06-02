@@ -56,8 +56,11 @@ export function MahasiswaForm({
   const validate = () => {
     const newErrors = {};
     if (!formData.nama) newErrors.nama = "Nama wajib diisi";
-    if (!formData.npm || isNaN(formData.npm) || formData.npm <= 0)
+    if (!formData.npm) {
+      newErrors.npm = "NPM wajib diisi";
+    } else if (isNaN(formData.npm) || formData.npm <= 0) {
       newErrors.npm = "NPM wajib diisi dan harus berupa angka positif";
+    }
     if (!formData.prodi) newErrors.prodi = "Prodi wajib diisi";
     if (!formData.fakultas) newErrors.fakultas = "Fakultas wajib diisi";
     if (!formData.alamat.jalan) newErrors["alamat.jalan"] = "Jalan wajib diisi";
