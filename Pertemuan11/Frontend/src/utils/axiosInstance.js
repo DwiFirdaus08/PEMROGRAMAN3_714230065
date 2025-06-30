@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Buat instance axios
 const axiosInstance = axios.create({
-  baseURL: "http://127.0.0.1:8088/api",
+  baseURL: "https://deploymentpemrogramaniii-production.up.railway.app/api",
   headers: {
     "Content-Type": "application/json",
   },
@@ -26,7 +26,7 @@ axiosInstance.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem("token"); // hapus token
-      window.location.href = "/";       // redirect ke login
+      window.location.href = "/"; // redirect ke login
     }
     return Promise.reject(error);
   }
